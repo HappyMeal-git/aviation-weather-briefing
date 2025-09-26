@@ -6,6 +6,7 @@ from weather_service import WeatherService
 from weather_analyzer import WeatherAnalyzer
 from nlp_analyzer import AviationNLPAnalyzer
 from visualizations import WeatherVisualizer
+from notam_service import NotamService
 from airport_coordinates import calculate_route_distance
 from datetime import datetime
 
@@ -25,6 +26,7 @@ weather_service = WeatherService()
 weather_analyzer = WeatherAnalyzer()
 visualizer = WeatherVisualizer()
 nlp_analyzer = AviationNLPAnalyzer()
+notam_service = NotamService()
 
 @app.route('/')
 def index():
@@ -53,6 +55,9 @@ def get_individual_weather():
                 results['taf'] = weather_service.get_taf(airport_code)
             elif report_type == 'PIREP':
                 results['pirep'] = weather_service.get_pirep(airport_code)
+            elif report_type == 'NOTAM':
+                results['notam'] = notam_service.get_notams(airport_code)
+                results['notam_summary'] = notam_service.get_notam_summary(results['notam'])
                 
         # Analyze weather conditions using ALL available data
         results['analysis'] = weather_analyzer.analyze_combined_weather_data(results)
@@ -133,6 +138,15 @@ def analyze_flight_plan():
         # Generate consolidated briefing
         briefing = weather_analyzer.generate_flight_briefing(weather_data, airports)
         
+        # Get NOTAMs for all airports
+        notam_data = {}
+        for airport in airports:
+            notams = notam_service.get_notams(airport)
+            notam_data[airport] = {
+                'notams': notams,
+                'summary': notam_service.get_notam_summary(notams)
+            }
+        
         # Generate NLP-based intelligent summary
         nlp_analysis = nlp_analyzer.generate_comprehensive_summary(weather_data, airports, briefing)
         
@@ -146,6 +160,7 @@ def analyze_flight_plan():
             'airports': airports,
             'weather_data': weather_data,
             'briefing': briefing,
+            'notam_data': notam_data,
             'visualizations': visualizations,
             'nlp_analysis': nlp_analysis,
             'route_info': {
@@ -184,5 +199,5 @@ def get_weather_summary(airport_code):
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5001))
+    port = int(os.environ.get('PORT', 5002))
     app.run(debug=True, host='0.0.0.0', port=port)

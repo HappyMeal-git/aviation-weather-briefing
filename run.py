@@ -12,7 +12,7 @@ def main():
     os.environ.setdefault('FLASK_ENV', 'development')
     
     # Get port from command line or environment
-    port = 5001
+    port = 5002
     if len(sys.argv) > 1:
         try:
             port = int(sys.argv[1])

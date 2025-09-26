@@ -6,6 +6,7 @@ A comprehensive web application that provides real-time aviation weather analysi
 
 - **🌍 Global Airport Support**: International airports worldwide (Mumbai ↔ Paris ↔ Dubai)
 - **📡 Real-time Weather Data**: Live METAR, TAF, and PIREP data from aviationweather.gov
+- **🔔 NOTAM Integration**: Notice to Airmen data with intelligent categorization and translation
 - **🎯 Intelligent Analysis**: Categorizes weather conditions as CLEAR, SIGNIFICANT, or SEVERE
 - **📊 Interactive Visualizations**: 
   - Wind analysis charts with spikes
@@ -55,8 +56,8 @@ A comprehensive web application that provides real-time aviation weather analysi
 ### Individual Airport Reports
 1. Go to "Individual Weather" tab
 2. Enter airport code (ICAO format)
-3. Select report types (METAR, TAF, PIREP)
-4. Get detailed weather analysis with TAF summaries
+3. Select report types (METAR, TAF, PIREP, NOTAM)
+4. Get detailed weather analysis with TAF summaries and NOTAM translations
 
 ## 🔌 API Endpoints
 
@@ -72,6 +73,7 @@ aviation-weather-briefing/
 ├── weather_service.py     # Weather data fetching service
 ├── weather_analyzer.py    # Weather analysis and categorization
 ├── nlp_analyzer.py       # NLP summaries and recommendations
+├── notam_service.py      # NOTAM data processing with AVWX
 ├── visualizations.py     # Interactive charts and maps
 ├── airport_coordinates.py # Global airport coordinate database
 ├── config.py             # Configuration settings

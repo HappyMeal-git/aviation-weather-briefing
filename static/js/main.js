@@ -181,14 +181,25 @@ function getIndividualWeather(airportCode, reportTypes) {
 function displayBriefingResults(data) {
     const briefingResults = document.getElementById('briefingResults');
     const individualResults = document.getElementById('individualResults');
+    const notamCard = document.getElementById('notamCard');
     
     // Hide individual results, show briefing
     individualResults.classList.add('d-none');
     briefingResults.classList.remove('d-none');
     
+    // Hide NOTAM card initially
+    if (notamCard) {
+        notamCard.style.display = 'none';
+    }
+    
     // Update NLP analysis sections
     if (data.nlp_analysis) {
         displayNLPAnalysis(data.nlp_analysis);
+    }
+    
+    // Display NOTAM data right after pilot actions, before visualizations
+    if (data.notam_data) {
+        displayNotamData(data.notam_data);
     }
     
     // Traditional briefing section removed - no need to update category badge
@@ -370,6 +381,10 @@ function generateIndividualWeatherHTML(data, airportCode) {
                 </div>
             </div>
         `;
+    }
+    
+    if (data.notam && data.notam.length > 0) {
+        html += generateNOTAMHTML(data.notam, data.notam_summary);
     }
     
     if (data.analysis) {
@@ -885,4 +900,142 @@ function displayRouteInfo(routeInfo) {
         // Insert route info before the executive summary
         executiveSummary.insertAdjacentHTML('beforebegin', routeInfoHTML);
     }
+}
+
+function displayNotamData(notamData) {
+    // Use the dedicated NOTAM card section
+    const notamCard = document.getElementById('notamCard');
+    const notamContent = document.getElementById('notamContent');
+    
+    if (notamCard && notamContent && notamData) {
+        let notamHTML = '';
+        
+        for (const [airport, data] of Object.entries(notamData)) {
+            const summary = data.summary;
+            const notams = data.notams;
+            
+            notamHTML += `
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0"><i class="fas fa-plane me-2"></i>${airport}</h6>
+                        <span class="badge bg-info">${summary.total_count} NOTAMs</span>
+                    </div>
+                    <div class="alert alert-light py-2 mb-2">
+                        <small class="text-muted">${summary.summary_text}</small>
+                    </div>
+                    ${generateNotamSummaryHTML(summary)}
+                    ${notams.length > 0 ? generateNotamListHTML(notams, `route-${airport}`) : '<p class="text-muted">No active NOTAMs</p>'}
+                </div>
+            `;
+        }
+        
+        // Update content and show the card
+        notamContent.innerHTML = notamHTML;
+        notamCard.style.display = 'block';
+    }
+}
+
+function generateNOTAMHTML(notams, summary) {
+    return `
+        <div class="card mb-3">
+            <div class="card-header">
+                <h6><i class="fas fa-exclamation-triangle"></i> NOTAMs (Notices to Airmen)</h6>
+                <small class="text-muted">${summary ? summary.summary_text : `${notams.length} NOTAMs`}</small>
+            </div>
+            <div class="card-body">
+                ${summary ? generateNotamSummaryHTML(summary) : ''}
+                ${generateNotamListHTML(notams, 'individual')}
+            </div>
+        </div>
+    `;
+}
+
+function generateNotamSummaryHTML(summary) {
+    if (!summary || summary.total_count === 0) return '';
+    
+    const categoryBadges = Object.entries(summary.categories || {})
+        .map(([category, count]) => `<span class="badge bg-secondary me-1">${category}: ${count}</span>`)
+        .join('');
+    
+    return `
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <strong>Summary:</strong><br>
+                <span class="badge bg-info me-2">${summary.total_count} Total</span>
+                ${summary.high_severity_count > 0 ? `<span class="badge bg-danger me-2">${summary.high_severity_count} High Severity</span>` : ''}
+                ${summary.operational_impact_count > 0 ? `<span class="badge bg-warning me-2">${summary.operational_impact_count} Operational Impact</span>` : ''}
+            </div>
+            <div class="col-md-6">
+                <strong>Categories:</strong><br>
+                ${categoryBadges}
+            </div>
+        </div>
+    `;
+}
+
+function generateNotamListHTML(notams, contextPrefix = '') {
+    if (!notams || notams.length === 0) {
+        return '<div class="alert alert-info py-2"><i class="fas fa-info-circle me-2"></i>No active NOTAMs for this airport.</div>';
+    }
+    
+    let html = '<div class="notam-list">';
+    
+    notams.forEach((notam, index) => {
+        const severityClass = notam.severity === 'HIGH' ? 'border-danger' : 
+                            notam.severity === 'MEDIUM' ? 'border-warning' : 'border-info';
+        
+        const categoryIcon = getNotamCategoryIcon(notam.category);
+        
+        // Create unique ID using context prefix, notam ID, and index
+        const uniqueId = `notam-${contextPrefix}-${notam.id || 'unknown'}-${index}`;
+        
+        html += `
+            <div class="card mb-2 ${severityClass}">
+                <div class="card-header py-2">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap">
+                        <span class="d-flex align-items-center flex-grow-1 me-2">
+                            <i class="${categoryIcon} me-2 flex-shrink-0"></i>
+                            <span class="text-truncate">
+                                <strong>${notam.id}</strong> - ${notam.category}
+                            </span>
+                        </span>
+                        <span class="badge bg-${notam.severity === 'HIGH' ? 'danger' : notam.severity === 'MEDIUM' ? 'warning' : 'info'} flex-shrink-0">${notam.severity}</span>
+                    </div>
+                </div>
+                <div class="card-body py-2">
+                    <p class="mb-1"><strong>${notam.summary}</strong></p>
+                    <small class="text-muted">
+                        ${notam.start_time ? `From: ${notam.start_time}` : ''} 
+                        ${notam.end_time ? `To: ${notam.end_time}` : ''}
+                    </small>
+                    <div class="mt-2">
+                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#${uniqueId}" aria-expanded="false">
+                            Show Full Text
+                        </button>
+                    </div>
+                    <div class="collapse mt-2" id="${uniqueId}">
+                        <div class="alert alert-light py-2">
+                            <small><code>${notam.raw_text}</code></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    return html;
+}
+
+function getNotamCategoryIcon(category) {
+    const icons = {
+        'RUNWAY': 'fas fa-road',
+        'NAVIGATION': 'fas fa-compass',
+        'LIGHTING': 'fas fa-lightbulb',
+        'AIRSPACE': 'fas fa-cloud',
+        'CONSTRUCTION': 'fas fa-hard-hat',
+        'WEATHER_SERVICES': 'fas fa-broadcast-tower',
+        'OTHER': 'fas fa-info-circle'
+    };
+    return icons[category] || 'fas fa-info-circle';
 }

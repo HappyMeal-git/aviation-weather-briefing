@@ -27,6 +27,7 @@
         <div class="row">
             <!-- Input Panel -->
             <div class="col-md-4">
+                <div class="sticky-top" style="top: 20px;">
                 <div class="card">
                     <div class="card-header">
                         <h5><i class="fas fa-route"></i> Flight Plan Input</h5>
@@ -124,6 +125,11 @@
                                                    id="pirepCheck">
                                             <label class="form-check-label" for="pirepCheck">PIREP</label>
                                         </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="NOTAM" 
+                                                   id="notamCheck">
+                                            <label class="form-check-label" for="notamCheck">NOTAM</label>
+                                        </div>
                                     </div>
                                     <button type="submit" class="btn btn-primary w-100">
                                         <i class="fas fa-cloud"></i> Get Weather Report
@@ -142,6 +148,7 @@
                     <div class="card-body" id="quickSummary">
                         <p class="text-muted">Enter flight details to see weather summary</p>
                     </div>
+                </div>
                 </div>
             </div>
 
@@ -178,6 +185,15 @@
                         </div>
                     </div>
 
+                    <!-- NOTAMs Section -->
+                    <div class="card mb-3" id="notamCard" style="display: none;">
+                        <div class="card-header">
+                            <h6><i class="fas fa-exclamation-triangle text-warning"></i> NOTAMs (Notices to Airmen)</h6>
+                        </div>
+                        <div class="card-body">
+                            <div id="notamContent"></div>
+                        </div>
+                    </div>
 
                     <!-- Visualizations -->
                     <div class="row">

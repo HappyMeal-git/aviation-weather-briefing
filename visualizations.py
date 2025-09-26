@@ -1,5 +1,6 @@
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import pandas as pd
 import folium
 from datetime import datetime
 import json
@@ -322,7 +323,7 @@ class WeatherVisualizer:
             fig = go.Figure()
             
             # Create 24-hour timeline
-            times = pd.date_range(start=datetime.now(), periods=24, freq='H')
+            times = pd.date_range(start=datetime.now(), periods=24, freq='h')
             
             for airport, data in weather_data.items():
                 analysis = data.get('analysis', {})
