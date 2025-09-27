@@ -16,6 +16,14 @@ function updateUTCClock() {
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
+    // Test Chart.js availability
+    console.log('Chart.js available:', typeof Chart !== 'undefined');
+    if (typeof Chart !== 'undefined') {
+        console.log('Chart.js version:', Chart.version);
+    } else {
+        console.error('Chart.js not loaded! Check CDN link.');
+    }
+    
     // Initialize UTC clock
     updateUTCClock();
     setInterval(updateUTCClock, 1000); // Update every second
@@ -830,6 +838,8 @@ function createFlightWeatherChart(data) {
     // Transform data to match expected format
     const flightData = transformDataForFlightChart(data);
     
+    // Make it globally available
+    window.FlightWeatherChart = flightWeatherChart;
     if (!flightData.timeline || flightData.timeline.length === 0) {
         console.warn('No timeline data after transformation');
         container.innerHTML = `

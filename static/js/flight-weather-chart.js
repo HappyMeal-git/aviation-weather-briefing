@@ -323,3 +323,40 @@ class FlightWeatherChart {
 
 // Make it globally available
 window.FlightWeatherChart = FlightWeatherChart;
+
+// Test function for debugging
+window.testChartCreation = function() {
+    console.log('Testing chart creation...');
+    
+    const testData = {
+        timeline: [
+            {
+                start_time: "2024-01-15T10:00:00Z",
+                location_description: "KJFK",
+                visibility: 8,
+                temperature: 12,
+                wind_speed: 15,
+                weather_description: "Clear",
+                cloud_description: "Few clouds",
+                conditions: {
+                    natural_language: "Weather: Clear. Clouds: Few clouds. Wind from 270 degrees at 15 knots."
+                }
+            },
+            {
+                start_time: "2024-01-15T12:00:00Z",
+                location_description: "KLAX",
+                visibility: 10,
+                temperature: 22,
+                wind_speed: 8,
+                weather_description: "Clear",
+                cloud_description: "Clear",
+                conditions: {
+                    natural_language: "Weather: Clear. Clouds: Clear. Wind from 250 degrees at 8 knots."
+                }
+            }
+        ]
+    };
+    
+    const chart = new FlightWeatherChart('flightWeatherChart');
+    chart.init(testData);
+};
