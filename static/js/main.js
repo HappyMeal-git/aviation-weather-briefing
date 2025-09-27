@@ -810,51 +810,86 @@ function createWeatherTimeline(chartData) {
 let flightWeatherChart = null;
 
 function createFlightWeatherChart(data) {
+    console.log('createFlightWeatherChart called with data:', data);
+    
     const containerId = 'flightWeatherChart';
+    
+    // Check if container exists
+    const container = document.getElementById(containerId);
+    if (!container) {
+        console.error(`Container ${containerId} not found in DOM`);
+        return;
+    }
     
     // Initialize chart if not already created
     if (!flightWeatherChart) {
+        console.log('Creating new FlightWeatherChart instance');
         flightWeatherChart = new FlightWeatherChart(containerId);
     }
     
     // Transform data to match expected format
     const flightData = transformDataForFlightChart(data);
     
+    if (!flightData.timeline || flightData.timeline.length === 0) {
+        console.warn('No timeline data after transformation');
+        container.innerHTML = `
+            <div class="alert alert-warning">
+                <h5>No Chart Data</h5>
+                <p>No weather timeline data available for charting.</p>
+                <small>This may be due to missing METAR data from the weather service.</small>
+            </div>
+        `;
+        return;
+    }
+    
     // Initialize or update the chart
     flightWeatherChart.init(flightData);
     
-    console.log('Enhanced flight weather chart created successfully');
+    console.log('Enhanced flight weather chart processing completed');
 }
 
 function transformDataForFlightChart(data) {
+    console.log('Transforming data for flight chart:', data);
+    
     // Transform the Flask data to match the expected React chart format
     const timeline = [];
     
     if (data.weather_data && data.airports) {
+        console.log('Processing airports:', data.airports);
+        
         data.airports.forEach((airport, index) => {
             const weatherInfo = data.weather_data[airport];
+            console.log(`Processing ${airport}:`, weatherInfo);
+            
             if (weatherInfo && weatherInfo.metar) {
                 const metar = weatherInfo.metar;
                 const analysis = weatherInfo.analysis || {};
                 
-                // Create timeline entry
+                // Create timeline entry with better data handling
                 const timelineEntry = {
                     start_time: metar.observation_time || new Date().toISOString(),
-                    location_description: airport,
-                    visibility: metar.visibility || 10,
-                    temperature: metar.temperature || 15,
-                    wind_speed: metar.wind_speed || 0,
-                    weather_description: analysis.summary || 'Clear',
+                    location_description: `${airport} - ${index + 1}`,
+                    visibility: parseFloat(metar.visibility) || 10,
+                    temperature: parseFloat(metar.temperature) || 15,
+                    wind_speed: parseFloat(metar.wind_speed) || 0,
+                    weather_description: analysis.summary || metar.weather_conditions || 'Clear',
                     cloud_description: metar.sky_condition || 'Clear',
                     conditions: {
                         natural_language: `Weather: ${analysis.summary || 'Clear'}. Clouds: ${metar.sky_condition || 'Clear'}. Wind from ${metar.wind_direction || 0} degrees at ${metar.wind_speed || 0} knots. Visibility ${metar.visibility || 10} SM. Temperature ${metar.temperature || 15}°C, dew point ${metar.dewpoint || 10}°C.`
                     }
                 };
                 
+                console.log('Created timeline entry:', timelineEntry);
                 timeline.push(timelineEntry);
+            } else {
+                console.warn(`No METAR data for ${airport}`);
             }
         });
+    } else {
+        console.warn('No weather data or airports found in data:', data);
     }
+    
+    console.log('Final timeline data:', timeline);
     
     return {
         timeline: timeline

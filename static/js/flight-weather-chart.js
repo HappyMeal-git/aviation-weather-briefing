@@ -15,13 +15,17 @@ class FlightWeatherChart {
      * @param {Object} flightData - Flight data containing timeline information
      */
     init(flightData) {
+        console.log('FlightWeatherChart.init called with:', flightData);
+        
         const data = flightData?.timeline || flightData?.weather_timeline;
         
         if (!data || data.length === 0) {
+            console.warn('No timeline data available for chart');
             this.showNoDataMessage();
             return;
         }
 
+        console.log('Processing timeline data:', data);
         this.transformData(data);
         this.createChart();
     }
@@ -112,20 +116,25 @@ class FlightWeatherChart {
             return;
         }
 
-        // Clear existing content
+        // Clear existing content and create canvas
         container.innerHTML = `
-            <div class="card">
-                <div class="card-header">
-                    <h6><i class="fas fa-chart-line"></i> Flight Weather Timeline</h6>
-                </div>
-                <div class="card-body">
-                    <canvas id="${this.containerId}-canvas" style="max-height: 400px;"></canvas>
-                </div>
+            <h3 class="text-center mb-4">Enhanced Flight Weather Timeline</h3>
+            <div style="position: relative; height: 400px; width: 100%;">
+                <canvas id="${this.containerId}-canvas"></canvas>
             </div>
         `;
 
         const canvas = document.getElementById(`${this.containerId}-canvas`);
+        if (!canvas) {
+            console.error('Canvas element not created');
+            return;
+        }
+        
         const ctx = canvas.getContext('2d');
+        if (!ctx) {
+            console.error('Could not get canvas context');
+            return;
+        }
 
         const labels = this.chartData.map(d => d.time);
 
@@ -172,13 +181,16 @@ class FlightWeatherChart {
         const options = {
             responsive: true,
             maintainAspectRatio: false,
-            layout: { padding: { top: 60 } },
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
             plugins: {
                 legend: { 
                     position: "top",
                     labels: {
                         usePointStyle: true,
-                        padding: 20
+                        padding: 15
                     }
                 },
                 tooltip: {
@@ -197,23 +209,32 @@ class FlightWeatherChart {
                 },
             },
             scales: {
+                x: {
+                    display: true,
+                    title: {
+                        display: true,
+                        text: 'Time (UTC)'
+                    }
+                },
                 y: { 
                     type: "linear", 
                     position: "left", 
                     title: { display: true, text: "Visibility (SM)" },
-                    grid: { color: "rgba(0,0,0,0.1)" }
+                    grid: { color: "rgba(0,0,0,0.1)" },
+                    beginAtZero: true
                 },
                 y1: { 
                     type: "linear", 
                     position: "right", 
                     grid: { drawOnChartArea: false }, 
-                    title: { display: true, text: "Temp & Dew Point (°C)" }
+                    title: { display: true, text: "Temperature (°C)" }
                 },
                 y2: { 
                     type: "linear", 
                     position: "right", 
                     grid: { drawOnChartArea: false }, 
-                    title: { display: true, text: "Wind Speed (kt)" }
+                    title: { display: true, text: "Wind Speed (kt)" },
+                    beginAtZero: true
                 },
             },
         };
@@ -237,13 +258,28 @@ class FlightWeatherChart {
             },
         };
 
-        // Create the chart
-        this.chart = new Chart(ctx, {
-            type: 'line',
-            data: dataset,
-            options: options,
-            plugins: [iconPlugin]
-        });
+        // Create the chart with error handling
+        try {
+            console.log('Creating Chart.js instance with data:', this.chartData.length, 'points');
+            
+            this.chart = new Chart(ctx, {
+                type: 'line',
+                data: dataset,
+                options: options,
+                plugins: [iconPlugin]
+            });
+            
+            console.log('Chart created successfully');
+        } catch (error) {
+            console.error('Error creating Chart.js instance:', error);
+            container.innerHTML = `
+                <div class="alert alert-danger">
+                    <h5>Chart Error</h5>
+                    <p>Failed to create chart: ${error.message}</p>
+                    <small>Check browser console for details</small>
+                </div>
+            `;
+        }
     }
 
     /**

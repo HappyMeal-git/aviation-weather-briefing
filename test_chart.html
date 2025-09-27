@@ -18,6 +18,10 @@
 
     <script src="static/js/flight-weather-chart.js"></script>
     <script>
+        // Test Chart.js availability
+        console.log('Chart.js available:', typeof Chart !== 'undefined');
+        console.log('Chart version:', Chart?.version);
+        
         // Sample test data matching the expected format
         const sampleFlightData = {
             timeline: [
