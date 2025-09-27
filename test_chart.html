@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Weather Chart Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .chart-container { width: 100%; max-width: 800px; margin: 20px auto; }
+        .test-button { padding: 10px 20px; margin: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Flight Weather Chart Test</h1>
+    <button class="test-button" onclick="testChart()">Test Chart with Sample Data</button>
+    <div id="testChart" class="chart-container"></div>
+
+    <script src="static/js/flight-weather-chart.js"></script>
+    <script>
+        // Sample test data matching the expected format
+        const sampleFlightData = {
+            timeline: [
+                {
+                    start_time: "2024-01-15T10:00:00Z",
+                    location_description: "KJFK - John F Kennedy Intl",
+                    visibility: 8,
+                    temperature: 12,
+                    wind_speed: 15,
+                    weather_description: "Light rain",
+                    cloud_description: "Overcast",
+                    conditions: {
+                        natural_language: "Weather: Light rain. Clouds: Overcast. Wind from 270 degrees at 15 knots. Visibility 8 SM. Temperature 12°C, dew point 8°C."
+                    }
+                },
+                {
+                    start_time: "2024-01-15T12:00:00Z",
+                    location_description: "KORD - Chicago O'Hare Intl",
+                    visibility: 10,
+                    temperature: 8,
+                    wind_speed: 12,
+                    weather_description: "Clear",
+                    cloud_description: "Few clouds",
+                    conditions: {
+                        natural_language: "Weather: Clear. Clouds: Few clouds. Wind from 290 degrees at 12 knots. Visibility 10 SM. Temperature 8°C, dew point 3°C."
+                    }
+                },
+                {
+                    start_time: "2024-01-15T14:00:00Z",
+                    location_description: "KDEN - Denver Intl",
+                    visibility: 6,
+                    temperature: 5,
+                    wind_speed: 20,
+                    weather_description: "Thunderstorms",
+                    cloud_description: "Broken clouds",
+                    conditions: {
+                        natural_language: "Weather: Thunderstorms. Clouds: Broken clouds. Wind from 240 degrees at 20 knots. Visibility 6 SM. Temperature 5°C, dew point 1°C."
+                    }
+                },
+                {
+                    start_time: "2024-01-15T16:00:00Z",
+                    location_description: "KLAX - Los Angeles Intl",
+                    visibility: 10,
+                    temperature: 22,
+                    wind_speed: 8,
+                    weather_description: "Clear",
+                    cloud_description: "Clear skies",
+                    conditions: {
+                        natural_language: "Weather: Clear. Clouds: Clear skies. Wind from 250 degrees at 8 knots. Visibility 10 SM. Temperature 22°C, dew point 15°C."
+                    }
+                }
+            ]
+        };
+
+        function testChart() {
+            console.log('Testing flight weather chart...');
+            
+            // Create chart instance
+            const chart = new FlightWeatherChart('testChart');
+            
+            // Initialize with sample data
+            chart.init(sampleFlightData);
+            
+            console.log('Chart test completed!');
+        }
+
+        // Auto-run test on page load
+        window.addEventListener('load', function() {
+            setTimeout(testChart, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -219,6 +219,9 @@ function displayBriefingResults(data) {
     
     // Traditional briefing section removed - no need to update category badge
     
+    // Create enhanced flight weather chart
+    createFlightWeatherChart(data);
+    
     // Create visualizations
     if (data.visualizations) {
         createWindChart(data.visualizations.wind_chart);
@@ -801,6 +804,61 @@ function createWeatherTimeline(chartData) {
     } else {
         container.innerHTML = '<div class="alert alert-info">No timeline data available</div>';
     }
+}
+
+// Global flight weather chart instance
+let flightWeatherChart = null;
+
+function createFlightWeatherChart(data) {
+    const containerId = 'flightWeatherChart';
+    
+    // Initialize chart if not already created
+    if (!flightWeatherChart) {
+        flightWeatherChart = new FlightWeatherChart(containerId);
+    }
+    
+    // Transform data to match expected format
+    const flightData = transformDataForFlightChart(data);
+    
+    // Initialize or update the chart
+    flightWeatherChart.init(flightData);
+    
+    console.log('Enhanced flight weather chart created successfully');
+}
+
+function transformDataForFlightChart(data) {
+    // Transform the Flask data to match the expected React chart format
+    const timeline = [];
+    
+    if (data.weather_data && data.airports) {
+        data.airports.forEach((airport, index) => {
+            const weatherInfo = data.weather_data[airport];
+            if (weatherInfo && weatherInfo.metar) {
+                const metar = weatherInfo.metar;
+                const analysis = weatherInfo.analysis || {};
+                
+                // Create timeline entry
+                const timelineEntry = {
+                    start_time: metar.observation_time || new Date().toISOString(),
+                    location_description: airport,
+                    visibility: metar.visibility || 10,
+                    temperature: metar.temperature || 15,
+                    wind_speed: metar.wind_speed || 0,
+                    weather_description: analysis.summary || 'Clear',
+                    cloud_description: metar.sky_condition || 'Clear',
+                    conditions: {
+                        natural_language: `Weather: ${analysis.summary || 'Clear'}. Clouds: ${metar.sky_condition || 'Clear'}. Wind from ${metar.wind_direction || 0} degrees at ${metar.wind_speed || 0} knots. Visibility ${metar.visibility || 10} SM. Temperature ${metar.temperature || 15}°C, dew point ${metar.dewpoint || 10}°C.`
+                    }
+                };
+                
+                timeline.push(timelineEntry);
+            }
+        });
+    }
+    
+    return {
+        timeline: timeline
+    };
 }
 
 function updateQuickSummary(data) {
