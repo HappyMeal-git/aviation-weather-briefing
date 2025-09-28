@@ -31,11 +31,17 @@ AIRPORT_COORDINATES = {
     'EKCH': [55.6181, 12.6561],   # Copenhagen
     'EDDM': [48.3537, 11.7750],   # Munich
     
-    # Asia Pacific
+    # Asia Pacific - India
     'VABB': [19.0896, 72.8656],   # Mumbai (Bombay)
     'VIDP': [28.5562, 77.1000],   # Delhi
     'VOMM': [13.0827, 80.2707],   # Chennai
     'VOBL': [12.9716, 77.5946],   # Bangalore
+    'VOBG': [15.8593, 74.6183],   # Belgaum
+    'VAGO': [15.3808, 73.8314],   # Goa
+    'VOHY': [17.4532, 78.4677],   # Hyderabad
+    'VOCI': [22.6546, 88.4467],   # Kolkata
+    'VOAT': [26.1061, 91.5859],   # Guwahati
+    'VEPT': [11.0641, 77.0434],   # Coimbatore
     'RJTT': [35.7647, 140.3864],  # Tokyo Haneda
     'RJAA': [35.7720, 140.3928],  # Tokyo Narita
     'RKSI': [37.4602, 126.4407],  # Seoul Incheon
@@ -61,14 +67,31 @@ AIRPORT_COORDINATES = {
     
     # South America
     'SBGR': [-23.4356, -46.4731], # São Paulo
-    'SCEL': [-33.3930, -70.7858], # Santiago
     'SAEZ': [-34.8222, -58.5358], # Buenos Aires
     'SKBO': [4.7016, -74.1469],   # Bogotá
 }
 
 def get_airport_coordinates(icao_code):
-    """Get coordinates for an airport"""
-    return AIRPORT_COORDINATES.get(icao_code.upper())
+    """Get coordinates for an airport with global database fallback"""
+    icao_upper = icao_code.upper()
+    
+    # First try our local database (fastest)
+    if icao_upper in AIRPORT_COORDINATES:
+        return AIRPORT_COORDINATES[icao_upper]
+    
+    # Fallback to global airport service
+    try:
+        from global_airport_service import global_airport_service
+        coords = global_airport_service.get_coordinates(icao_code)
+        if coords:
+            # Cache it locally for future use
+            AIRPORT_COORDINATES[icao_upper] = coords
+            return coords
+    except Exception as e:
+        print(f"Global airport service failed for {icao_code}: {e}")
+    
+    # Final fallback: Return None (will be handled gracefully)
+    return None
 
 def calculate_distance_nm(lat1, lon1, lat2, lon2):
     """

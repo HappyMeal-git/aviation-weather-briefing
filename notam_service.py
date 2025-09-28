@@ -37,7 +37,7 @@ class NotamService:
         
         try:
             # Use AVWX to fetch NOTAMs
-            notams = avwx.Notams.from_icao(airport_code)
+            notams = avwx.Notam.from_icao(airport_code)
             
             if not notams or not notams.data:
                 logging.info(f"No NOTAMs available for {airport_code}")

@@ -147,7 +147,7 @@ export default function FlightWeatherChart({ flightData }) {
     
     return (
         <div className="flex flex-col items-center mt-6">
-            <div className="bg-white shadow-md p-4 rounded-lg h-fit w-full">
+            <div className="bg-white shadow-md p-4 rounded-lg h-fit w-260">
                 <h3 className="text-lg font-semibold mb-4 text-center">Flight Weather Timeline</h3>
                 <Line data={dataset} options={options} plugins={[iconPlugin]} />
             </div>

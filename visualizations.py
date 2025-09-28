@@ -235,12 +235,14 @@ class WeatherVisualizer:
             m = folium.Map(location=center, zoom_start=self._get_zoom_level(airports))
             
             route_coords = []
+            missing_airports = []
             
             for i, airport in enumerate(airports):
                 # Get real coordinates from global database
                 coords = get_airport_coordinates(airport)
                 if not coords:
-                    # Skip airports without coordinates
+                    # Track missing airports for user feedback
+                    missing_airports.append(airport)
                     continue
                 
                 route_coords.append(coords)

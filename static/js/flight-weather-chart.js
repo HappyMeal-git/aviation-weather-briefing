@@ -35,12 +35,14 @@ class FlightWeatherChart {
      * @param {Array} data - Raw flight timeline data
      */
     transformData(data) {
-        this.chartData = data.map((point) => {
+        console.log('Transforming chart data:', data);
+        
+        this.chartData = data.map((point, index) => {
             // Extract weather information from natural language or structured data
             const weather = point.conditions?.natural_language?.match(/Weather: (.*?)[.,]/)?.[1] || 
-                           point.weather_description || "";
+                           point.weather_description || "Clear";
             const clouds = point.conditions?.natural_language?.match(/Clouds: (.*)/)?.[1] || 
-                          point.cloud_description || "";
+                          point.cloud_description || "Clear";
             
             // Determine weather icon based on conditions
             let weatherIcon = "☀️"; // default sunny
@@ -51,19 +53,24 @@ class FlightWeatherChart {
             else if (/cloud|overcast/i.test(weather)) weatherIcon = "☁️";
             else if (/clear|sunny/i.test(weather)) weatherIcon = "☀️";
             
-            return {
-                time: this.formatTime(point.start_time || point.time || point.timestamp),
-                visibility: point.visibility || point.visibility_sm || 10,
-                temperature: point.temperature || point.temp_c || 15,
+            const transformedPoint = {
+                time: this.formatTime(point.start_time || point.time || point.timestamp) || `Point ${index + 1}`,
+                visibility: parseFloat(point.visibility || point.visibility_sm || 10),
+                temperature: parseFloat(point.temperature || point.temp_c || 15),
                 dewPoint: this.extractDewPoint(point),
-                windSpeed: point.wind_speed || point.wind_speed_kt || 0,
+                windSpeed: parseFloat(point.wind_speed || point.wind_speed_kt || 0),
                 windDir: this.extractWindDirection(point),
-                location: point.location_description || point.airport || point.location || "",
+                location: point.location_description || point.airport || point.location || `Location ${index + 1}`,
                 weather,
                 clouds,
                 weatherIcon,
             };
+            
+            console.log(`Transformed point ${index}:`, transformedPoint);
+            return transformedPoint;
         });
+        
+        console.log('Final chart data:', this.chartData);
     }
 
     /**
@@ -118,8 +125,7 @@ class FlightWeatherChart {
 
         // Clear existing content and create canvas
         container.innerHTML = `
-            <h3 class="text-center mb-4">Enhanced Flight Weather Timeline</h3>
-            <div style="position: relative; height: 400px; width: 100%;">
+            <div style="position: relative; height: 450px; width: 100%; padding: 20px;">
                 <canvas id="${this.containerId}-canvas"></canvas>
             </div>
         `;
@@ -148,6 +154,7 @@ class FlightWeatherChart {
                     backgroundColor: "rgba(59,130,246,0.2)",
                     tension: 0.3,
                     yAxisID: "y",
+                    fill: false,
                 },
                 {
                     label: "Temperature (°C)",
@@ -156,24 +163,17 @@ class FlightWeatherChart {
                     backgroundColor: "rgba(239,68,68,0.2)",
                     tension: 0.3,
                     yAxisID: "y1",
-                },
-                {
-                    label: "Dew Point (°C)",
-                    data: this.chartData.map(d => d.dewPoint),
-                    borderColor: "rgb(34,197,94)",
-                    backgroundColor: "rgba(34,197,94,0.2)",
-                    borderDash: [6, 6],
-                    tension: 0.3,
-                    yAxisID: "y1",
+                    fill: false,
                 },
                 {
                     label: "Wind Speed (kt)",
                     data: this.chartData.map(d => d.windSpeed),
                     borderColor: "rgb(234,179,8)",
                     backgroundColor: "rgba(234,179,8,0.2)",
-                    borderDash: [2, 4],
+                    borderDash: [5, 5],
                     tension: 0.3,
-                    yAxisID: "y2",
+                    yAxisID: "y1",
+                    fill: false,
                 },
             ],
         };
@@ -227,14 +227,7 @@ class FlightWeatherChart {
                     type: "linear", 
                     position: "right", 
                     grid: { drawOnChartArea: false }, 
-                    title: { display: true, text: "Temperature (°C)" }
-                },
-                y2: { 
-                    type: "linear", 
-                    position: "right", 
-                    grid: { drawOnChartArea: false }, 
-                    title: { display: true, text: "Wind Speed (kt)" },
-                    beginAtZero: true
+                    title: { display: true, text: "Temperature (°C) / Wind Speed (kt)" }
                 },
             },
         };
